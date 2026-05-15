@@ -6,14 +6,15 @@ ifeq ($(strip $(PQ_LIBS)),)
   PQ_LIBS := -lpq
 endif
 
-BIN := chbench
-SRC := chbench.cpp
+BIN  := chbench
+SRC  := chbench.cpp
+HDRS := chbench_base.h tpcc_benchbase.h
 
 .PHONY: all clean
 
 all: $(BIN)
 
-$(BIN): $(SRC)
+$(BIN): $(SRC) $(HDRS)
 	$(CXX) $(CXXFLAGS) $(PQ_CFLAGS) -o $@ $< $(PQ_LIBS)
 
 clean:
