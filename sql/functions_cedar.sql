@@ -96,7 +96,7 @@ $$
             return;
         }
 
-        let mut var_ol_total : NUMERIC(6, 2) = 0;
+        let mut var_ol_total : NUMERIC(8, 2) = 0;
 
         SELECT ol_amount AS var_ol_amount
         FROM order_line
@@ -139,6 +139,10 @@ $$
     let var_o_ol_cnt : INTEGER;
     let mut var_o_all_local : INTEGER = 1;
     let var_should_rollback : BOOL;
+    let mut var_ol_i_ids : INTEGER[] = ARRAY[]::INTEGER[];
+    let mut var_ol_numbers : INTEGER[] = ARRAY[]::INTEGER[];
+    let mut var_ol_supply_w_ids : INTEGER[] = ARRAY[]::INTEGER[];
+    let mut var_ol_quantities : INTEGER[] = ARRAY[]::INTEGER[];
 
     var_d_id = urand(1, 10);
     var_c_id = nurand(1023, 1, 3000);
@@ -161,8 +165,10 @@ $$
             var_o_all_local = 0;
         }
 
-        INSERT INTO positions (ol_i_id, ol_number, ol_supply_w_id, ol_quantity)
-        VALUES (var_ol_i_id, var_ol_number, var_ol_supply_w_id, var_ol_quantity);
+        var_ol_i_ids = array_append(var_ol_i_ids, var_ol_i_id);
+        var_ol_numbers = array_append(var_ol_numbers, var_ol_number);
+        var_ol_supply_w_ids = array_append(var_ol_supply_w_ids, var_ol_supply_w_id);
+        var_ol_quantities = array_append(var_ol_quantities, var_ol_quantity);
     }
 
     SELECT w_tax AS var_w_tax
@@ -212,7 +218,8 @@ $$
            ol_number AS var_ol_number,
            ol_supply_w_id AS var_ol_supply_w_id,
            ol_quantity AS var_ol_quantity
-    FROM positions {
+    FROM unnest(var_ol_i_ids, var_ol_numbers, var_ol_supply_w_ids, var_ol_quantities)
+         AS positions(ol_i_id, ol_number, ol_supply_w_id, ol_quantity) {
         SELECT i_price AS var_i_price
           FROM item
          WHERE item.i_id = var_ol_i_id
